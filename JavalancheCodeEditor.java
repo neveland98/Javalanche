@@ -27,17 +27,12 @@ public class JavalancheCodeEditor {
        JMenu proMenu, fileMenu;
        JMenuItem open, createNew, saveProject, closeProject;
         
-       initialScreen = new JFrame();
-       
+       initialScreen = new JFrame("Javalanche Editor");
        toolbar = new JMenuBar();
        
        proMenu = new JMenu("Project");
        open = new JMenuItem("Open");
        createNew = new JMenuItem("Create New Project");
-       
-       
-       
-       
        saveProject = new JMenuItem("Save Project");
        closeProject = new JMenuItem("Close Project");
        
@@ -56,8 +51,7 @@ public class JavalancheCodeEditor {
        toolbar.add(fileMenu);
        toolbar.add(compile);
        toolbar.add(execute);
-       
-       
+
        initialScreen.setSize(400,500);
        initialScreen.setLayout(new BorderLayout());
        initialScreen.getContentPane().add(toolbar, BorderLayout.PAGE_START);
