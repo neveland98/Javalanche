@@ -113,7 +113,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
           JFileChooser fs = new JFileChooser();
           FileFilter f = new FileNameExtensionFilter(".txt" , "text file");
           fs.setCurrentDirectory(new java.io.File("."));
-          fs.setDialogTitle("Save a File");
+          fs.setDialogTitle("Create");
           fs.setFileFilter(f);
           int result = fs.showSaveDialog(null);
           if (result == JFileChooser.APPROVE_OPTION){
@@ -126,7 +126,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
        else if (s.equals("Save Project")) {
           String txt = text.getText();
           JFileChooser n = new JFileChooser(".");
-          n.setDialogTitle("Create");
+          n.setDialogTitle("Save");
           int retval = n.showSaveDialog(null);
           if (retval == JFileChooser.APPROVE_OPTION){
              File file = n.getSelectedFile();
