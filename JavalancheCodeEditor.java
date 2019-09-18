@@ -9,6 +9,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.*;
 import java.io.*;
 import javax.swing.text.*;
+import java.util.Scanner;
 
 public class JavalancheCodeEditor extends JFrame implements ActionListener {
    JTextArea text;
@@ -76,15 +77,13 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
        toolbar.add(compile);
        toolbar.add(execute);
 
-       screen.add(text);
+       screen.setContentPane(text);
+       screen.setJMenuBar(toolbar);
        screen.setSize(400,500);
        screen.setLayout(new BorderLayout());
-       screen.getContentPane().add(toolbar, BorderLayout.PAGE_START);
        screen.setVisible(true);
-       
        screen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
-    // when button pressed
     public void actionPerformed (ActionEvent e)
     {
        String s = e.getActionCommand();
@@ -94,11 +93,11 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
 //                fc.setCurrentDirectory(new java.io.File("."));
 //                fc.setDialogTitle("Files");
 //                fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-          fc.showOpenDialog(null);
-          File f = fc.getSelectedFile();
-          String filename = f.getAbsolutePath();
+          int r = fc.showOpenDialog(null);
+          if (r == JFileChooser.APPROVE_OPTION){
+            File f = new File (fc.getSelectedFile().getAbsolutePath());
           try{
-             FileReader reader = new FileReader(filename);
+             FileReader reader = new FileReader(f);
              BufferedReader br = new BufferedReader(reader);
              text.read(br,null);
              br.close();
@@ -108,16 +107,16 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
           } catch (IOException ex) {
              ex.printStackTrace();
           }
+          }
        }
        else if (s.equals("Create Project")) {
-          JFileChooser fs = new JFileChooser();
-          FileFilter f = new FileNameExtensionFilter(".txt" , "text file");
-          fs.setCurrentDirectory(new java.io.File("."));
-          fs.setDialogTitle("Create");
-          fs.setFileFilter(f);
-          int result = fs.showSaveDialog(null);
-          if (result == JFileChooser.APPROVE_OPTION){
-
+           JFileChooser fs = new JFileChooser();
+           int result = fs.showSaveDialog(null);
+           if (result == JFileChooser.APPROVE_OPTION){
+               FileFilter f = new FileNameExtensionFilter(".txt" , "text file");
+                fs.setCurrentDirectory(new java.io.File("."));
+                fs.setDialogTitle("Create");
+                fs.setFileFilter(f);
           }
        }
        else if (s.equals("Close Project")) {
@@ -138,7 +137,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
              }
              try {
                 text.write(new OutputStreamWriter(new FileOutputStream(file) , "utf-8"));
-                Desktop.getDesktop().open(file);
              } catch (FileNotFoundException ex) {
                 ex.printStackTrace();
              } catch (IOException ex) {
@@ -147,16 +145,54 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
           }
        }
        else if (s.equals("Open File")) {
-          // open file
+           JFileChooser f = new JFileChooser();
+
+           int r = f.showOpenDialog(null);
+
+           if (r == JFileChooser.APPROVE_OPTION) {
+               File fi = new File(f.getSelectedFile().getAbsolutePath());
+
+               try {
+                   File open = f.getSelectedFile();
+                   Scanner scan = new Scanner(new FileReader(open.getPath()));
+                   while (scan.hasNext()) {
+                       text.append(scan.nextLine() + "\n");
+                   }
+               }
+               catch (Exception evt) {
+                   JOptionPane.showMessageDialog(screen, evt.getMessage());
+               }
+           }
        }
        else if (s.equals("Create File")) {
-          // create file
+          text.setText("");
+       }
+       else if (s.equals("Close File")) {
+           // close file
        }
        else if (s.equals("Edit File")) {
-          // edit file
+           // edit file
        }
        else if (s.equals("Save File")) {
-          // save file
+           JFileChooser f = new JFileChooser();
+           int r = f.showSaveDialog(null);
+           if (r == JFileChooser.APPROVE_OPTION) {
+
+               File fi = new File(f.getSelectedFile().getAbsolutePath());
+
+               try {
+                   FileWriter fw = new FileWriter(fi, false);
+                   BufferedWriter w = new BufferedWriter(fw);
+
+                   w.write(text.getText());
+
+                   w.flush();
+                   w.close();
+               }
+               catch (Exception evt) {
+                   JOptionPane.showMessageDialog(screen, evt.getMessage());
+               }
+           }
        }
        else if (s.equals("Remove File")) {
           // remove file
