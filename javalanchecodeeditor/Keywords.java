@@ -12,5 +12,5 @@ public class Keywords {
             "long", "native", "return", "short", "static", "strictfp", "super", "switch",
             "synchronized", "this", "throw", "throws", "transient", "true",
             "try", "void", "volatile", "while", "String"};
-    private String[] operators = { "+", "-", "*", "/", "//"};
+    private String[] operators = { "+", "-", "*","**", "/", "//","[","]"};
 }
