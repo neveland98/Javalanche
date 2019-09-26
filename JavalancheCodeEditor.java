@@ -120,7 +120,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
           }
        }
        else if (s.equals("Close Project")) {
-          // close project
+          text.setText("");
        }
        else if (s.equals("Save Project")) {
           String txt = text.getText();
@@ -168,7 +168,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
           text.setText("");
        }
        else if (s.equals("Close File")) {
-           // close file
+          text.setText("");
        }
        else if (s.equals("Edit File")) {
            // edit file
