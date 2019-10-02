@@ -8,8 +8,12 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.*;
 import java.io.*;
+import java.nio.file.Paths;
 import javax.swing.text.*;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.filechooser.FileSystemView;
 
 public class JavalancheCodeEditor extends JFrame implements ActionListener {
    JTextArea text;
@@ -22,10 +26,23 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
        JMenu proMenu, fiMenu;
        JMenuItem openProject, createProject, saveProject, closeProject;
        JMenuItem openFile, createFile, closeFile, editFile, saveFile, removeFile;
-        
+       JTabbedPane openFiles;
+       JPanel file, project;
+
+ 
        screen = new JFrame("Javalanche Editor");
+       openFiles = new JTabbedPane();
        toolbar = new JMenuBar();
+       file = new JPanel();
+       project = new JPanel();
+       
+       JFileChooser projectView = new JFileChooser(FileSystemView.getFileSystemView());
+       projectView.setDialogTitle("Project");
+       projectView.setControlButtonsAreShown(false);
+       project.add(projectView);
+       
        text = new JTextArea();
+       file.add(text);
        
        proMenu = new JMenu("Project");
        openProject = new JMenuItem("Open Project");
@@ -76,11 +93,14 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
        toolbar.add(fiMenu);
        toolbar.add(compile);
        toolbar.add(execute);
-
-       screen.setContentPane(text);
+       
        screen.setJMenuBar(toolbar);
        screen.setSize(400,500);
        screen.setLayout(new BorderLayout());
+       screen.add(project, BorderLayout.LINE_START);
+       screen.add(text, BorderLayout.CENTER);
+       screen.setExtendedState(JFrame.MAXIMIZED_BOTH);
+       
        screen.setVisible(true);
        screen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
@@ -110,17 +130,41 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
           }
        }
        else if (s.equals("Create Project")) {
-           JFileChooser fs = new JFileChooser();
-           int result = fs.showSaveDialog(null);
-           if (result == JFileChooser.APPROVE_OPTION){
-               FileFilter f = new FileNameExtensionFilter(".txt" , "text file");
-                fs.setCurrentDirectory(new java.io.File("."));
-                fs.setDialogTitle("Create");
-                fs.setFileFilter(f);
-          }
+         JFileChooser fs = new JFileChooser(FileSystemView.getFileSystemView());
+         JButton create = new JButton(), enter = new JButton();
+         fs.setDialogTitle("Choose Project Folder");
+         fs.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+         
+         String proName = JOptionPane.showInputDialog(screen, "Enter Project Name: ");
+         
+        
+         if(fs.showSaveDialog(create) ==JFileChooser.APPROVE_OPTION)
+         {
+             if(new File(fs.getSelectedFile().getAbsolutePath() + "//"+proName+"//lib").mkdirs())
+             {
+                 File a = new File(fs.getSelectedFile().getAbsolutePath()+ "//"+proName+"//main.txt");
+                 
+                 try {
+                     if(a.createNewFile())
+                     {
+                         JOptionPane.showMessageDialog(screen, "Project '"+proName+"' Created!");
+                     }
+                 } catch (IOException ex) {
+                     Logger.getLogger(JavalancheCodeEditor.class.getName()).log(Level.SEVERE, null, ex);
+                 }
+             }
+             
+         }
+         
+         
+         
+        
+         
+        
        }
+         
        else if (s.equals("Close Project")) {
-          text.setText("");
+          // close project
        }
        else if (s.equals("Save Project")) {
           String txt = text.getText();
@@ -168,7 +212,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
           text.setText("");
        }
        else if (s.equals("Close File")) {
-          text.setText("");
+           // close file
        }
        else if (s.equals("Edit File")) {
            // edit file
