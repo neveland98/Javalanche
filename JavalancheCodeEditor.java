@@ -135,10 +135,10 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
 
             if(fs.showSaveDialog(create) ==JFileChooser.APPROVE_OPTION)
             {
-                currDirectory = new File(fs.getSelectedFile().getAbsolutePath() + "//"+proName);
-
                 if(new File(fs.getSelectedFile().getAbsolutePath() + "//"+proName+"//lib").mkdirs())
                 {
+                    currDirectory = new File(fs.getSelectedFile().getAbsolutePath() + "//"+proName);
+
                     File a = new File(fs.getSelectedFile().getAbsolutePath()+ "//"+proName+"//main.java");
 
                     try {
