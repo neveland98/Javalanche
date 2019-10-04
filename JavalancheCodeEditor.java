@@ -88,7 +88,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         execute = new JButton("Execute");
 
         compile.addActionListener(this);
-        compile.addActionListener(this);
+        execute.addActionListener(this);
 
         toolbar.add(proMenu);
         toolbar.add(fiMenu);
