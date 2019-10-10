@@ -12,7 +12,8 @@ import javax.swing.text.*;
 import java.util.Scanner;
 
 public class JavalancheCodeEditor extends JFrame implements ActionListener {
-    JTextArea text;
+   // use jtextpane or jeditor pane??
+    JFrame text;
     JFrame screen;
 
     JavalancheCodeEditor()
@@ -25,7 +26,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
 
         screen = new JFrame("Javalanche Editor");
         toolbar = new JMenuBar();
-        text = new JTextArea();
+        text = new JFrame();
         text.setFont(new Font("Courier New", Font.PLAIN, 14));
         proMenu = new JMenu("Project");
         proMenu.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
