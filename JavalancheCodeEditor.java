@@ -8,204 +8,303 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.*;
 import java.io.*;
+import java.nio.file.Paths;
 import javax.swing.text.*;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.filechooser.FileSystemView;
 
 public class JavalancheCodeEditor extends JFrame implements ActionListener {
-   JTextArea text;
-   JFrame screen;
+    JTextArea text;
+    JFrame screen;
+    File currDirectory;
+    File currFile;
 
-   JavalancheCodeEditor()
-   {
-       JButton newProject, execute, compile;
-       JMenuBar toolbar;
-       JMenu proMenu, fiMenu;
-       JMenuItem openProject, createProject, saveProject, closeProject;
-       JMenuItem openFile, createFile, closeFile, editFile, saveFile, removeFile;
-        
-       screen = new JFrame("Javalanche Editor");
-       toolbar = new JMenuBar();
-       text = new JTextArea();
-       
-       proMenu = new JMenu("Project");
-       openProject = new JMenuItem("Open Project");
-       createProject = new JMenuItem("Create Project");
-       saveProject = new JMenuItem("Save Project");
-       closeProject = new JMenuItem("Close Project");
-
-       fiMenu = new JMenu("File");
-       openFile = new JMenuItem("Open File");
-       createFile = new JMenuItem("Create File");
-       closeFile = new JMenuItem("Close File");
-       editFile = new JMenuItem("Edit File");
-       saveFile = new JMenuItem("Save File");
-       removeFile = new JMenuItem("Remove File");
+    JavalancheCodeEditor()
+    {
+        JButton newProject, execute, compile;
+        JMenuBar toolbar;
+        JMenu proMenu, fiMenu;
+        JMenuItem openProject, createProject, saveProject, closeProject;
+        JMenuItem openFile, createFile, closeFile, editFile, saveFile, removeFile;
+        JTabbedPane openFiles;
+        JPanel file, project;
 
 
-       openProject.addActionListener(this);
-       createProject.addActionListener(this);
-       saveProject.addActionListener(this);
-       closeProject.addActionListener(this);
+        screen = new JFrame("Javalanche Editor");
+        openFiles = new JTabbedPane();
+        toolbar = new JMenuBar();
+        file = new JPanel();
+        project = new JPanel();
 
-       openFile.addActionListener(this);
-       createFile.addActionListener(this);
-       closeFile.addActionListener(this);
-       editFile.addActionListener(this);
-       saveFile.addActionListener(this);
-       removeFile.addActionListener(this);
+        JFileChooser projectView = new JFileChooser(FileSystemView.getFileSystemView());
+        projectView.setDialogTitle("Project");
+        projectView.setControlButtonsAreShown(false);
+        project.add(projectView);
 
-       proMenu.add(openProject);
-       proMenu.add(createProject);
-       proMenu.add(saveProject);
-       proMenu.add(closeProject);
+        text = new JTextArea();
+        file.add(text);
 
-       fiMenu.add(openFile);
-       fiMenu.add(createFile);
-       fiMenu.add(closeFile);
-       fiMenu.add(editFile);
-       fiMenu.add(saveFile);
-       fiMenu.add(removeFile);
+        proMenu = new JMenu("Project");
+        openProject = new JMenuItem("Open Project");
+        createProject = new JMenuItem("Create Project");
+        saveProject = new JMenuItem("Save Project");
+        closeProject = new JMenuItem("Close Project");
 
-       compile = new JButton("Compile");
-       execute = new JButton("Execute");
+        fiMenu = new JMenu("File");
+        openFile = new JMenuItem("Open File");
+        createFile = new JMenuItem("Create File");
+        closeFile = new JMenuItem("Close File");
+        editFile = new JMenuItem("Edit File");
+        saveFile = new JMenuItem("Save File");
+        removeFile = new JMenuItem("Remove File");
 
-       compile.addActionListener(this);
-       compile.addActionListener(this);
-       
-       toolbar.add(proMenu);
-       toolbar.add(fiMenu);
-       toolbar.add(compile);
-       toolbar.add(execute);
 
-       screen.setContentPane(text);
-       screen.setJMenuBar(toolbar);
-       screen.setSize(400,500);
-       screen.setLayout(new BorderLayout());
-       screen.setVisible(true);
-       screen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        openProject.addActionListener(this);
+        createProject.addActionListener(this);
+        saveProject.addActionListener(this);
+        closeProject.addActionListener(this);
+
+        openFile.addActionListener(this);
+        createFile.addActionListener(this);
+        closeFile.addActionListener(this);
+        editFile.addActionListener(this);
+        saveFile.addActionListener(this);
+        removeFile.addActionListener(this);
+
+        proMenu.add(openProject);
+        proMenu.add(createProject);
+        proMenu.add(saveProject);
+        proMenu.add(closeProject);
+
+        fiMenu.add(openFile);
+        fiMenu.add(createFile);
+        fiMenu.add(closeFile);
+        fiMenu.add(editFile);
+        fiMenu.add(saveFile);
+        fiMenu.add(removeFile);
+
+        compile = new JButton("Compile");
+        execute = new JButton("Execute");
+
+        compile.addActionListener(this);
+        execute.addActionListener(this);
+
+        toolbar.add(proMenu);
+        toolbar.add(fiMenu);
+        toolbar.add(compile);
+        toolbar.add(execute);
+
+        screen.setJMenuBar(toolbar);
+        screen.setSize(400,500);
+        screen.setLayout(new BorderLayout());
+        screen.add(project, BorderLayout.LINE_START);
+        screen.add(text, BorderLayout.CENTER);
+        screen.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
+        screen.setVisible(true);
+        screen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
     public void actionPerformed (ActionEvent e)
     {
-       String s = e.getActionCommand();
+        String s = e.getActionCommand();
 
-       if (s.equals("Open Project")) {
-          final JFileChooser fc = new JFileChooser();
-//                fc.setCurrentDirectory(new java.io.File("."));
-//                fc.setDialogTitle("Files");
-//                fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-          int r = fc.showOpenDialog(null);
-          if (r == JFileChooser.APPROVE_OPTION){
-            File f = new File (fc.getSelectedFile().getAbsolutePath());
-          try{
-             FileReader reader = new FileReader(f);
-             BufferedReader br = new BufferedReader(reader);
-             text.read(br,null);
-             br.close();
-             text.requestFocus();
-          } catch (FileNotFoundException ex) {
-             ex.printStackTrace();
-          } catch (IOException ex) {
-             ex.printStackTrace();
-          }
-          }
-       }
-       else if (s.equals("Create Project")) {
-           JFileChooser fs = new JFileChooser();
-           int result = fs.showSaveDialog(null);
-           if (result == JFileChooser.APPROVE_OPTION){
-               FileFilter f = new FileNameExtensionFilter(".txt" , "text file");
-                fs.setCurrentDirectory(new java.io.File("."));
-                fs.setDialogTitle("Create");
-                fs.setFileFilter(f);
-          }
-       }
-       else if (s.equals("Close Project")) {
-          text.setText("");
-       }
-       else if (s.equals("Save Project")) {
-          String txt = text.getText();
-          JFileChooser n = new JFileChooser(".");
-          n.setDialogTitle("Save");
-          int retval = n.showSaveDialog(null);
-          if (retval == JFileChooser.APPROVE_OPTION){
-             File file = n.getSelectedFile();
-             if (file == null){
-                return;
-             }
-             if(!file.getName().toLowerCase().endsWith("txt")){
-                file = new File(file.getParentFile(), file.getName() + ".txt");
-             }
-             try {
-                text.write(new OutputStreamWriter(new FileOutputStream(file) , "utf-8"));
-             } catch (FileNotFoundException ex) {
-                ex.printStackTrace();
-             } catch (IOException ex) {
-                ex.printStackTrace();
-             }
-          }
-       }
-       else if (s.equals("Open File")) {
-           JFileChooser f = new JFileChooser();
+        if (s.equals("Open Project")) {
 
-           int r = f.showOpenDialog(null);
+            JFileChooser fc = new JFileChooser();
+            fc.setDialogTitle("Open Project");
+            fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            fc.setAcceptAllFileFilterUsed(false);
 
-           if (r == JFileChooser.APPROVE_OPTION) {
-               File fi = new File(f.getSelectedFile().getAbsolutePath());
+            if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                try {
+                    currDirectory = new File(fc.getSelectedFile().getAbsolutePath());
+                    text.setText("");
+                    File open = new File(currDirectory+"//main.java");
+                    currFile = open;
+                    if(open.exists()) {
+                        FileReader fr = new FileReader(open.getPath());
+                        Scanner scan = new Scanner(fr);
+                        while (scan.hasNext()) {
+                            text.append(scan.nextLine() + "\n");
+                        }
+                        fr.close();
+                    }
+                    else {
+                        text.setText("<Create File>");
+                    }
+                } catch (Exception evt) {
+                    JOptionPane.showMessageDialog(screen, evt.getMessage());
+                }
+            }
+        }
+        else if (s.equals("Create Project")) {
+            JFileChooser fs = new JFileChooser(FileSystemView.getFileSystemView());
+            JButton create = new JButton(), enter = new JButton();
+            fs.setDialogTitle("Choose Project Folder");
+            fs.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
-               try {
-                   File open = f.getSelectedFile();
-                   Scanner scan = new Scanner(new FileReader(open.getPath()));
-                   while (scan.hasNext()) {
-                       text.append(scan.nextLine() + "\n");
-                   }
-               }
-               catch (Exception evt) {
-                   JOptionPane.showMessageDialog(screen, evt.getMessage());
-               }
-           }
-       }
-       else if (s.equals("Create File")) {
-          text.setText("");
-       }
-       else if (s.equals("Close File")) {
-          text.setText("");
-       }
-       else if (s.equals("Edit File")) {
-           // edit file
-       }
-       else if (s.equals("Save File")) {
-           JFileChooser f = new JFileChooser();
-           int r = f.showSaveDialog(null);
-           if (r == JFileChooser.APPROVE_OPTION) {
+            String proName = JOptionPane.showInputDialog(screen, "Enter Project Name: ");
 
-               File fi = new File(f.getSelectedFile().getAbsolutePath());
 
-               try {
-                   FileWriter fw = new FileWriter(fi, false);
-                   BufferedWriter w = new BufferedWriter(fw);
+            if(fs.showSaveDialog(create) ==JFileChooser.APPROVE_OPTION)
+            {
+                if(new File(fs.getSelectedFile().getAbsolutePath() + "//"+proName+"//lib").mkdirs())
+                {
+                    currDirectory = new File(fs.getSelectedFile().getAbsolutePath() + "//"+proName);
 
-                   w.write(text.getText());
+                    File a = new File(fs.getSelectedFile().getAbsolutePath()+ "//"+proName+"//main.java");
+                    currFile = a;
 
-                   w.flush();
-                   w.close();
-               }
-               catch (Exception evt) {
-                   JOptionPane.showMessageDialog(screen, evt.getMessage());
-               }
-           }
-       }
-       else if (s.equals("Remove File")) {
-          // remove file
-       }
-       else if (s.equals("Execute")){
-          // execute
-       }
-       else if (s.equals("Compile")) {
-          // compile
-       }
+                    try {
+                        BufferedWriter w = new BufferedWriter(new FileWriter(a));
+                        w.write("<Main File>");
+                        w.close();
+
+                        JOptionPane.showMessageDialog(screen, "Project '"+proName+"' Created!");
+                    } catch (IOException ex) {
+                        Logger.getLogger(JavalancheCodeEditor.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+
+            }
+        }
+
+        else if (s.equals("Close Project")) {
+            currDirectory = null;
+            currFile = null;
+            text.setText("");
+            JOptionPane.showMessageDialog(screen, "Project Closed!");
+        }
+        else if (s.equals("Save Project")) {
+            String txt = text.getText();
+            JFileChooser n = new JFileChooser(".");
+            n.setDialogTitle("Save");
+            int retval = n.showSaveDialog(null);
+            if (retval == JFileChooser.APPROVE_OPTION){
+                File file = n.getSelectedFile();
+                if (file == null){
+                    return;
+                }
+                if(!file.getName().toLowerCase().endsWith("txt")){
+                    file = new File(file.getParentFile(), file.getName() + ".txt");
+                }
+                try {
+                    text.write(new OutputStreamWriter(new FileOutputStream(file) , "utf-8"));
+                } catch (FileNotFoundException ex) {
+                    ex.printStackTrace();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        else if (s.equals("Open File")) {
+
+            JFileChooser f = new JFileChooser();
+            if (currDirectory != null) {
+                f.setCurrentDirectory(currDirectory);
+            }
+            int r = f.showOpenDialog(null);
+            if (r == JFileChooser.APPROVE_OPTION) {
+                File fi = new File(f.getSelectedFile().getAbsolutePath());
+                currFile = fi;
+                text.setText("");
+                try {
+                    File open = f.getSelectedFile();
+                    FileReader fr = new FileReader(open.getPath());
+                    Scanner scan = new Scanner(fr);
+                    while (scan.hasNext()) {
+                        text.append(scan.nextLine() + "\n");
+                    }
+                    fr.close();
+                }
+                catch (Exception evt) {
+                    JOptionPane.showMessageDialog(screen, evt.getMessage());
+                }
+            }
+        }
+        else if (s.equals("Create File")) {
+            currFile = null;
+            text.setText("<New File>");
+        }
+        else if (s.equals("Close File")) {
+            int r = JOptionPane.showConfirmDialog(null, "Do you want to save?", "Confirm",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (r == JOptionPane.YES_OPTION) {
+                // save file
+            }
+            currFile = null;
+            text.setText("");
+        }
+        else if (s.equals("Edit File")) {
+            // edit file
+        }
+        else if (s.equals("Save File")) {
+            if (currFile == null) {
+                JFileChooser f = new JFileChooser();
+                if (currDirectory != null) {
+                    f.setCurrentDirectory(currDirectory);
+                }
+                int r = f.showSaveDialog(null);
+                if (r == JFileChooser.APPROVE_OPTION) {
+
+                    File fi = new File(f.getSelectedFile().getAbsolutePath()+ ".java");
+                    currFile = fi;
+                    try {
+                        FileWriter fw = new FileWriter(fi, false);
+                        BufferedWriter w = new BufferedWriter(fw);
+
+                        w.write(text.getText());
+
+                        w.flush();
+                        w.close();
+                        JOptionPane.showMessageDialog(screen, "File Saved!");
+                    }
+                    catch (Exception evt) {
+                        JOptionPane.showMessageDialog(screen, evt.getMessage());
+                    }
+                }
+            }
+            else {
+                try {
+                    FileWriter f = new FileWriter(currFile, false);
+                    BufferedWriter wr = new BufferedWriter(f);
+
+                    wr.write(text.getText());
+
+                    wr.flush();
+                    wr.close();
+                    JOptionPane.showMessageDialog(screen, "File Saved!");
+                }
+                catch (Exception evt) {
+                    JOptionPane.showMessageDialog(screen, evt.getMessage());
+                }
+            }
+        }
+        else if (s.equals("Remove File")) {
+            int r = JOptionPane.showConfirmDialog(null, "Do you want to continue?", "Confirm",
+                    JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (r == JOptionPane.YES_OPTION) {
+                File f = currFile;
+                if (f.delete()) {
+                    currFile = null;
+                    text.setText("");
+                    JOptionPane.showMessageDialog(screen, "File removed from project!");
+                } else {
+                    JOptionPane.showMessageDialog(screen, "Error");
+                }
+            }
+        }
+        else if (s.equals("Execute")){
+            // execute
+        }
+        else if (s.equals("Compile")) {
+            // compile
+        }
     }
-   public static void main(String args[])
-   {
-      JavalancheCodeEditor e = new JavalancheCodeEditor();
-   }
+    public static void main(String args[])
+    {
+        JavalancheCodeEditor e = new JavalancheCodeEditor();
+    }
 }
