@@ -1,7 +1,6 @@
-package javalanchecodeeditor;
 
 import java.awt.BorderLayout;
-import java.io.File;
+
 import javax.swing.*;
 import java.awt.*;
 import javax.swing.filechooser.FileFilter;
@@ -10,6 +9,8 @@ import java.awt.event.*;
 import java.io.*;
 import java.nio.file.Paths;
 import javax.swing.text.*;
+
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -266,6 +267,32 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         }
         else if (s.equals("Execute")){
             // execute
+        	Scanner s1;
+        	try {
+        	s1 = new Scanner(currFile);
+        	ArrayList<String> list = new ArrayList<String>();
+        	        while (s1.hasNext()){
+        	           list.add(s1.next());
+        	        }
+        	        ArrayList<String> command = new ArrayList<String>();
+        	        command = list;
+        	        ProcessBuilder pb = new ProcessBuilder(command);
+        	        Process a = pb.start();
+        	        OutputStream os = a.getOutputStream();
+        	        PrintStream ps = new PrintStream(os);
+        	        ps.println("success");
+        	        ps.flush();
+        	        BufferedReader br = new BufferedReader(new InputStreamReader(a.getInputStream()));
+        	       String cOutput;
+        	       while((cOutput = br.readLine()) != null) {
+        	    	   System.out.println(cOutput);
+        	       }
+        	        s1.close();
+        	} catch (FileNotFoundException e1) {
+        	e1.printStackTrace();
+        	} catch (IOException e1) {
+        	e1.printStackTrace();
+        	}
         }
         else if (s.equals("Compile")) {
             // compile
