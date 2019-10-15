@@ -134,10 +134,10 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                         FileReader fr = new FileReader(open.getPath());
                         Scanner scan = new Scanner(fr);
                         while (scan.hasNext()) {
-                        	doc.insertString(doc.getLength(), s, null);
+                        	doc.insertString(doc.getLength(), scan.nextLine() + '\n', null);
                         }
-                        fr.close();
                         scan.close();
+                        fr.close();
                         JOptionPane.showMessageDialog(screen, "Project Opened!");
                     }
                     else {
@@ -225,7 +225,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     FileReader fr = new FileReader(open.getPath());
                     Scanner scan = new Scanner(fr);
                     while (scan.hasNext()) {
-                    	doc.insertString(doc.getLength(), s, null);
+                    	doc.insertString(doc.getLength(), scan.nextLine() + '\n', null);
+                    	
                     }
                     scan.close();
                 }                 
