@@ -1,4 +1,4 @@
-
+package javalanchecodeeditor;
 import java.awt.BorderLayout;
 
 import javax.swing.*;
@@ -10,6 +10,8 @@ import java.io.*;
 import java.nio.file.Paths;
 import javax.swing.text.*;
 
+import jsyntaxpane.*;
+
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -17,7 +19,7 @@ import java.util.logging.Logger;
 import javax.swing.filechooser.FileSystemView;
 
 public class JavalancheCodeEditor extends JFrame implements ActionListener {
-    JTextArea text;
+    JEditorPane text;
     JFrame screen;
     File currDirectory;
     File currFile;
@@ -44,7 +46,9 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         //projectView.setControlButtonsAreShown(false);
         //project.add(projectView);
 
-        text = new JTextArea();
+        text = new JEditorPane();
+        DefaultSyntaxKit.initKit();
+        text.setContentType("text/java");
         file.add(text);
 
         proMenu = new JMenu("Project");
@@ -126,11 +130,13 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     File open = new File(currDirectory+"//main.java");
                     currFile = open;
                     if(open.exists()) {
+                        Document doc = text.getDocument();
                         FileReader fr = new FileReader(open.getPath());
                         Scanner scan = new Scanner(fr);
                         while (scan.hasNext()) {
-                            text.append(scan.nextLine() + "\n");
+                        	doc.insertString(doc.getLength(), scan.nextLine() + '\n', null);
                         }
+                        scan.close();
                         fr.close();
                         JOptionPane.showMessageDialog(screen, "Project Opened!");
                     }
@@ -214,16 +220,18 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 currFile = fi;
                 text.setText("");
                 try {
+                    Document doc = text.getDocument();
                     File open = f.getSelectedFile();
                     FileReader fr = new FileReader(open.getPath());
                     Scanner scan = new Scanner(fr);
                     while (scan.hasNext()) {
-                        text.append(scan.nextLine() + "\n");
+                    	doc.insertString(doc.getLength(), scan.nextLine() + '\n', null);
+                    	
                     }
-                    fr.close();
-                }
+                    scan.close();
+                }                 
                 catch (Exception evt) {
-                    JOptionPane.showMessageDialog(screen, evt.getMessage());
+                     JOptionPane.showMessageDialog(screen, evt.getMessage());
                 }
             }
         }
