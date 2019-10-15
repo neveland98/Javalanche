@@ -233,25 +233,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 catch (Exception evt) {
                      JOptionPane.showMessageDialog(screen, evt.getMessage());
                 }
-                /*
-                try {
-                    File open = f.getSelectedFile();
-                      File open = f.getSelectedFile();
-                    FileReader fr = new FileReader(open.getPath());
-                    Scanner scan = new Scanner(fr);
-                    while (scan.hasNext()) {
-                        text.append(scan.nextLine() + "\n");
-                    }                  FileReader fr = new FileReader(open.getPath());
-                    Scanner scan = new Scanner(fr);
-                    while (scan.hasNext()) {
-                        text.append(scan.nextLine() + "\n");
-                    }
-                    fr.close();
-                }
-                catch (Exception evt) {
-                    JOptionPane.showMessageDialog(screen, evt.getMessage());
-                }
-                */
             }
         }
         else if (s.equals("Create File")) {
