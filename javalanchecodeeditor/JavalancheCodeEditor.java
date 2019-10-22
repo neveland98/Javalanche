@@ -1,20 +1,40 @@
 package javalanchecodeeditor;
 
 import java.awt.BorderLayout;
-import java.io.File;
 import javax.swing.*;
 import java.awt.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.*;
 import java.io.*;
+import java.nio.file.Paths;
 import javax.swing.text.*;
+
+import jsyntaxpane.*;
+
+import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.filechooser.FileSystemView;
+
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
+import javax.swing.JLabel;
+import java.awt.Dimension;
+
+
 
 public class JavalancheCodeEditor extends JFrame implements ActionListener {
-   // use jtextpane or jeditor pane??
-    JFrame text;
+    JEditorPane text;
     JFrame screen;
+    File currDirectory;
+    File currFile;
+    JPanel project;
+    JTabbedPane openFiles;
+    JScrollPane scrollPane;
+    int count =1;
 
     JavalancheCodeEditor()
     {
@@ -23,36 +43,37 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         JMenu proMenu, fiMenu;
         JMenuItem openProject, createProject, saveProject, closeProject;
         JMenuItem openFile, createFile, closeFile, editFile, saveFile, removeFile;
+        JPanel file;
 
         screen = new JFrame("Javalanche Editor");
+        openFiles = new JTabbedPane();
         toolbar = new JMenuBar();
-        text = new JFrame();
-        text.setFont(new Font("Courier New", Font.PLAIN, 14));
+        file = new JPanel(new GridLayout(1,1));
+        project = new JPanel(new GridLayout(1,1));
+
+        //JFileChooser projectView = new JFileChooser(FileSystemView.getFileSystemView());
+        //projectView.setDialogTitle("Project");
+        //projectView.setControlButtonsAreShown(false);
+        //project.add(projectView);
+
+        text = new JEditorPane();
+        DefaultSyntaxKit.initKit();
+        text.setContentType("text/java");
+
         proMenu = new JMenu("Project");
-        proMenu.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
         openProject = new JMenuItem("Open Project");
-        openProject.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
         createProject = new JMenuItem("Create Project");
-        createProject.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
         saveProject = new JMenuItem("Save Project");
-        saveProject.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
         closeProject = new JMenuItem("Close Project");
-        closeProject.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
 
         fiMenu = new JMenu("File");
-        fiMenu.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
         openFile = new JMenuItem("Open File");
-        openFile.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
         createFile = new JMenuItem("Create File");
-        createFile.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
         closeFile = new JMenuItem("Close File");
-        closeFile.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
         editFile = new JMenuItem("Edit File");
-        editFile.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
         saveFile = new JMenuItem("Save File");
-        saveFile.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
         removeFile = new JMenuItem("Remove File");
-        removeFile.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
+
 
         openProject.addActionListener(this);
         createProject.addActionListener(this);
@@ -79,23 +100,27 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         fiMenu.add(removeFile);
 
         compile = new JButton("Compile");
-        compile.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
         execute = new JButton("Execute");
-        execute.setFont(new Font("Helvetica Neue", Font.PLAIN, 18));
-
 
         compile.addActionListener(this);
-        compile.addActionListener(this);
+        execute.addActionListener(this);
 
         toolbar.add(proMenu);
         toolbar.add(fiMenu);
         toolbar.add(compile);
         toolbar.add(execute);
 
-        screen.setContentPane(text);
+        text.setFont(new Font("Courier New", Font.PLAIN, 14));
+        scrollPane = new JScrollPane(text);
+        file.add(scrollPane, BorderLayout.CENTER);
+        project.add(openFiles);
         screen.setJMenuBar(toolbar);
-        screen.setSize(700,900);
+        screen.setSize(400,500);
         screen.setLayout(new BorderLayout());
+        screen.add(project, BorderLayout.CENTER);
+        openFiles.addTab("untitled",file);
+        screen.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
         screen.setVisible(true);
         screen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
@@ -104,40 +129,95 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         String s = e.getActionCommand();
 
         if (s.equals("Open Project")) {
-            final JFileChooser fc = new JFileChooser();
-//                fc.setCurrentDirectory(new java.io.File("."));
-//                fc.setDialogTitle("Files");
-//                fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int r = fc.showOpenDialog(null);
-            if (r == JFileChooser.APPROVE_OPTION){
-                File f = new File (fc.getSelectedFile().getAbsolutePath());
-                try{
-                    FileReader reader = new FileReader(f);
-                    BufferedReader br = new BufferedReader(reader);
-                    text.read(br,null);
-                    br.close();
-                    text.requestFocus();
-                } catch (FileNotFoundException ex) {
-                    ex.printStackTrace();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+
+            JFileChooser fc = new JFileChooser();
+            fc.setDialogTitle("Open Project");
+            fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            fc.setAcceptAllFileFilterUsed(false);
+
+            if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+                try {
+                    currDirectory = new File(fc.getSelectedFile().getAbsolutePath());
+                    text.setText("");
+                    File open = new File(currDirectory+"//main.java");
+                    currFile = open;
+                    if(open.exists()) {
+                        Document doc = text.getDocument();
+                        FileReader fr = new FileReader(open.getPath());
+                        Scanner scan = new Scanner(fr);
+                        while (scan.hasNext()) {
+                        	doc.insertString(doc.getLength(), scan.nextLine() + '\n', null);
+                        }
+                        scan.close();
+                        fr.close();
+                        String a = currDirectory.getName();
+                        openFiles.setTitleAt(count-1,currFile.getName());
+                        JOptionPane.showMessageDialog(screen, "Project " + a + " opened!");
+                    }
+                    else {
+                        openFiles.setTitleAt(count-1,"new file");
+                        text.setText("<Create File>");
+                    }
+                } catch (Exception evt) {
+                    JOptionPane.showMessageDialog(screen, evt.getMessage());
                 }
             }
         }
         else if (s.equals("Create Project")) {
-            JFileChooser fs = new JFileChooser();
-            int result = fs.showSaveDialog(null);
-            if (result == JFileChooser.APPROVE_OPTION){
-                FileFilter f = new FileNameExtensionFilter(".txt" , "text file");
-                fs.setCurrentDirectory(new java.io.File("."));
-                fs.setDialogTitle("Create");
-                fs.setFileFilter(f);
+            JFileChooser fs = new JFileChooser(FileSystemView.getFileSystemView());
+            JButton create = new JButton(), enter = new JButton();
+            fs.setDialogTitle("Choose Project Folder");
+            fs.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+            String proName = JOptionPane.showInputDialog(screen, "Enter Project Name: ");
+
+
+            if(fs.showSaveDialog(create) ==JFileChooser.APPROVE_OPTION)
+            {
+                if(new File(fs.getSelectedFile().getAbsolutePath() + "//"+proName+"//lib").mkdirs())
+                {
+                    currDirectory = new File(fs.getSelectedFile().getAbsolutePath() + "//"+proName);
+
+                    File a = new File(fs.getSelectedFile().getAbsolutePath()+ "//"+proName+"//main.java");
+                    currFile = a;
+
+                    try {
+                        BufferedWriter w = new BufferedWriter(new FileWriter(a));
+                        w.write("public class Main {\n" +
+                                "\n" +
+                                "    public static void main(String[] args) {\n" +
+                                "\t// write your code here\n" +
+                                "    }\n" +
+                                "}");
+                        w.close();
+
+                        JOptionPane.showMessageDialog(screen, "Project '"+proName+"' created!");
+                    } catch (IOException ex) {
+                        Logger.getLogger(JavalancheCodeEditor.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+
             }
         }
+
         else if (s.equals("Close Project")) {
-            text.setText("");
+            if (currDirectory == null) {
+                JOptionPane.showMessageDialog(screen, "No project currently opened.");
+            }
+            else {
+                String a = currDirectory.getName();
+                int r = JOptionPane.showConfirmDialog(null, "Are you sure you want to close project?", "Confirm",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (r == JOptionPane.YES_OPTION) {
+                    openFiles.setTitleAt(count-1,"untitled");
+                    currDirectory = null;
+                    currFile = null;
+                    text.setText("");
+                    JOptionPane.showMessageDialog(screen, "Project " + a + " closed!");
+                }
+            }
         }
-        else if (s.equals("Save Project")) {
+        else if (s.equals("Save Project")) {    // needs fixing
             String txt = text.getText();
             JFileChooser n = new JFileChooser(".");
             n.setDialogTitle("Save");
@@ -160,42 +240,164 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
             }
         }
         else if (s.equals("Open File")) {
-            JFileChooser f = new JFileChooser();
-
-            int r = f.showOpenDialog(null);
-
-            if (r == JFileChooser.APPROVE_OPTION) {
-                File fi = new File(f.getSelectedFile().getAbsolutePath());
-
-                try {
-                    File open = f.getSelectedFile();
-                    Scanner scan = new Scanner(new FileReader(open.getPath()));
-                    while (scan.hasNext()) {
-                        text.append(scan.nextLine() + "\n");
-                    }
+            int k = 0;
+            if (currFile != null) {
+                int r = JOptionPane.showConfirmDialog(null, "Are you sure you want to open a different file?", "Confirm",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (r == JOptionPane.YES_OPTION) {
+                    k = 1;
                 }
-                catch (Exception evt) {
-                    JOptionPane.showMessageDialog(screen, evt.getMessage());
+            }
+            if (currFile == null || k==1) {
+                JFileChooser f = new JFileChooser();
+                if (currDirectory != null) {
+                    f.setCurrentDirectory(currDirectory);
+                }
+                int r = f.showOpenDialog(null);
+                if (r == JFileChooser.APPROVE_OPTION) {
+                    File fi = new File(f.getSelectedFile().getAbsolutePath());
+                    currFile = fi;
+                    openFiles.setTitleAt(count-1,fi.getName());
+                    text.setText("");
+                    try {
+                        Document doc = text.getDocument();
+                        File open = f.getSelectedFile();
+                        FileReader fr = new FileReader(open.getPath());
+                        Scanner scan = new Scanner(fr);
+                        while (scan.hasNext()) {
+                            doc.insertString(doc.getLength(), scan.nextLine() + '\n', null);
+
+                        }
+                        scan.close();
+                    } catch (Exception evt) {
+                        JOptionPane.showMessageDialog(screen, evt.getMessage());
+                    }
                 }
             }
         }
         else if (s.equals("Create File")) {
-            text.setText("");
+            if (currFile == null) {
+                saveFile(currFile);
+                text.setText("<New File>");
+            }
+            else {
+                int r = JOptionPane.showConfirmDialog(null, "Are you sure you want to close current file?", "Confirm",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (r == JOptionPane.YES_OPTION) {
+                    currFile = null;
+                    saveFile(currFile);
+                    text.setText("<New File>");
+                }
+            }
         }
         else if (s.equals("Close File")) {
-            //ask if they want to save
-            text.setText("");
+            if (currFile == null) {
+                JOptionPane.showMessageDialog(screen, "No file currently opened.");
+            }
+            else {
+                String a = currFile.getName();
+                int r = JOptionPane.showConfirmDialog(null, "Do you want to save?", "Confirm",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (r == JOptionPane.YES_OPTION) {
+                    saveFile(currFile);
+                }
+                currFile = null;
+                openFiles.setTitleAt(count-1,"untitled");
+                text.setText("");
+                JOptionPane.showMessageDialog(screen, "File " + a + " closed!");
+            }
         }
         else if (s.equals("Edit File")) {
             // edit file
         }
         else if (s.equals("Save File")) {
-            JFileChooser f = new JFileChooser();
-            int r = f.showSaveDialog(null);
+            saveFile(currFile);
+        }
+        else if (s.equals("Remove File")) {
+            if (currFile == null) {
+                JOptionPane.showMessageDialog(screen, "No file currently opened.");
+            }
+            else {
+                String a = currFile.getName();
+                int r = JOptionPane.showConfirmDialog(null, "Are you sure you want to remove file?", "Confirm",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                if (r == JOptionPane.YES_OPTION) {
+                    File f = currFile;
+                    if (f.delete()) {
+                        currFile = null;
+                        openFiles.setTitleAt(count-1,"untitled");
+                        text.setText("");
+                        JOptionPane.showMessageDialog(screen, "File " + a + " removed from project!");
+                    } else {
+                        JOptionPane.showMessageDialog(screen, "Error");
+                    }
+                }
+            }
+        }
+        else if (s.equals("Execute")){    // needs fixing      
+            if (currFile == null) {
+                JOptionPane.showMessageDialog(screen, "No file currently opened.");
+            }
+            else {
+                String f = currFile.getName();
+                try {
+                    Process process = Runtime.getRuntime().exec("java " + f);
+                }catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+/*        	Scanner s1;
+        	try {
+        	s1 = new Scanner(currFile);
+        	ArrayList<String> list = new ArrayList<String>();
+        	        while (s1.hasNext()){
+        	           list.add(s1.next());
+        	        }
+        	        ArrayList<String> command = new ArrayList<String>();
+        	        command = list;
+        	        ProcessBuilder pb = new ProcessBuilder(command);
+        	        Process a = pb.start();
+        	        OutputStream os = a.getOutputStream();
+        	        PrintStream ps = new PrintStream(os);
+        	        ps.println("success");
+        	        ps.flush();
+        	        BufferedReader br = new BufferedReader(new InputStreamReader(a.getInputStream()));
+        	       String cOutput;
+        	       while((cOutput = br.readLine()) != null) {
+        	    	   System.out.println(cOutput);
+        	       }
+        	        s1.close();
+        	} catch (FileNotFoundException e1) {
+        	e1.printStackTrace();
+        	} catch (IOException e1) {
+        	e1.printStackTrace();
+        	} */
+        }
+        else if (s.equals("Compile")) {   // needs fixing   
+            if (currFile == null) {
+                JOptionPane.showMessageDialog(screen, "No file currently opened.");
+            }
+            else {
+                saveFile(currFile);
+                String f = currFile.getName();
+                try {
+                    Process process = Runtime.getRuntime().exec("javac " + f);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+    }
+    public void saveFile(File f) {
+        if (f == null) {
+            JFileChooser fc = new JFileChooser();
+            if (currDirectory != null) {
+                fc.setCurrentDirectory(currDirectory);
+            }
+            int r = fc.showSaveDialog(null);
             if (r == JFileChooser.APPROVE_OPTION) {
 
-                File fi = new File(f.getSelectedFile().getAbsolutePath());
-
+                File fi = new File(fc.getSelectedFile().getAbsolutePath()+ ".java");
                 try {
                     FileWriter fw = new FileWriter(fi, false);
                     BufferedWriter w = new BufferedWriter(fw);
@@ -204,25 +406,34 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
 
                     w.flush();
                     w.close();
+
+                    openFiles.setTitleAt(count-1,fi.getName());
+                    JOptionPane.showMessageDialog(screen, "File created!");
                 }
                 catch (Exception evt) {
                     JOptionPane.showMessageDialog(screen, evt.getMessage());
                 }
+                currFile = fi;
             }
         }
-        else if (s.equals("Remove File")) {
-            // remove file
-        }
-        else if (s.equals("Execute")){
-            // execute
-        }
-        else if (s.equals("Compile")) {
-            // compile
+        else {
+            try {
+                FileWriter fw = new FileWriter(f, false);
+                BufferedWriter w = new BufferedWriter(fw);
+
+                w.write(text.getText());
+
+                w.flush();
+                w.close();
+                openFiles.setTitleAt(count-1,f.getName());
+                JOptionPane.showMessageDialog(screen, "File Saved!");
+            } catch (Exception evt) {
+                JOptionPane.showMessageDialog(screen, evt.getMessage());
+            }
         }
     }
     public static void main(String args[])
     {
-
         JavalancheCodeEditor e = new JavalancheCodeEditor();
     }
 }
