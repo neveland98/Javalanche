@@ -1,5 +1,4 @@
 package javalanchecodeeditor;
-
 import java.awt.BorderLayout;
 import javax.swing.*;
 import java.awt.*;
@@ -35,6 +34,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
     JTabbedPane openFiles;
     JScrollPane scrollPane;
     int count =1;
+    KeywordCounter k;
 
     JavalancheCodeEditor()
     {
@@ -57,6 +57,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         //project.add(projectView);
 
         text = new JEditorPane();
+        KeywordCounter k = new KeywordCounter();
         DefaultSyntaxKit.initKit();
         text.setContentType("text/java");
 
@@ -312,6 +313,14 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         }
         else if (s.equals("Save File")) {
             saveFile(currFile);
+            /*
+            try {
+            	System.out.println(k.countKeywords(currFile));
+            }
+            catch (Exception evt) {
+                JOptionPane.showMessageDialog(screen, evt.getMessage());
+            }
+            */
         }
         else if (s.equals("Remove File")) {
             if (currFile == null) {
