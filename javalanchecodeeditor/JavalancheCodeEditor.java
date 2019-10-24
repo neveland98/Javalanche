@@ -42,7 +42,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         JMenuBar toolbar;
         JMenu proMenu, fiMenu;
         JMenuItem openProject, createProject, saveProject, closeProject;
-        JMenuItem openFile, createFile, closeFile, editFile, saveFile, removeFile;
+        JMenuItem openFile, createFile, closeFile, saveFile, removeFile;
         JPanel file;
 
         screen = new JFrame("Javalanche Editor");
@@ -70,7 +70,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         openFile = new JMenuItem("Open File");
         createFile = new JMenuItem("Create File");
         closeFile = new JMenuItem("Close File");
-        editFile = new JMenuItem("Edit File");
         saveFile = new JMenuItem("Save File");
         removeFile = new JMenuItem("Remove File");
 
@@ -83,7 +82,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         openFile.addActionListener(this);
         createFile.addActionListener(this);
         closeFile.addActionListener(this);
-        editFile.addActionListener(this);
         saveFile.addActionListener(this);
         removeFile.addActionListener(this);
 
@@ -95,7 +93,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         fiMenu.add(openFile);
         fiMenu.add(createFile);
         fiMenu.add(closeFile);
-        fiMenu.add(editFile);
         fiMenu.add(saveFile);
         fiMenu.add(removeFile);
 
@@ -306,9 +303,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 text.setText("");
                 JOptionPane.showMessageDialog(screen, "File " + a + " closed!");
             }
-        }
-        else if (s.equals("Edit File")) {
-            // edit file
         }
         else if (s.equals("Save File")) {
             saveFile(currFile);
