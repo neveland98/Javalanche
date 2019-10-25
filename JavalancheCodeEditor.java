@@ -9,15 +9,12 @@ import java.awt.event.*;
 import java.io.*;
 import java.nio.file.Paths;
 import javax.swing.text.*;
-
 import jsyntaxpane.*;
-
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.filechooser.FileSystemView;
-
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -37,11 +34,12 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
     JFrame screen;
     File currDirectory;
     File currFile;
-    JPanel project;
+    JPanel tree;
     JTabbedPane openFiles;
     JScrollPane scrollPane;
     int count =1;
-    String Path;
+    FileSystemTree t;
+    //String Path;
 
     JavalancheCodeEditor()
     {
@@ -49,8 +47,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         JMenuBar toolbar;
         JMenu proMenu, fiMenu;
         JMenuItem openProject, createProject, saveProject, closeProject;
-        JMenuItem openFile, createFile, closeFile, editFile, saveFile, removeFile;
-        JPanel file;
+        JMenuItem openFile, createFile, closeFile, saveFile, removeFile;
+        JPanel file, project;
         
        /* JFileChooser javabin = new JFileChooser();
         javabin.setDialogTitle("Select Java Bin File");
@@ -66,8 +64,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         toolbar = new JMenuBar();
         file = new JPanel(new GridLayout(1,1));
         project = new JPanel(new GridLayout(1,1));
-        
-        project.setVisible(false);
+        tree = new JPanel(new GridLayout(1,1));
+        tree.setVisible(false);
 
         //JFileChooser projectView = new JFileChooser(FileSystemView.getFileSystemView());
         //projectView.setDialogTitle("Project");
@@ -88,7 +86,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         openFile = new JMenuItem("Open File");
         createFile = new JMenuItem("Create File");
         closeFile = new JMenuItem("Close File");
-        editFile = new JMenuItem("Edit File");
         saveFile = new JMenuItem("Save File");
         removeFile = new JMenuItem("Remove File");
 
@@ -101,7 +98,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         openFile.addActionListener(this);
         createFile.addActionListener(this);
         closeFile.addActionListener(this);
-        editFile.addActionListener(this);
         saveFile.addActionListener(this);
         removeFile.addActionListener(this);
 
@@ -113,7 +109,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         fiMenu.add(openFile);
         fiMenu.add(createFile);
         fiMenu.add(closeFile);
-        fiMenu.add(editFile);
         fiMenu.add(saveFile);
         fiMenu.add(removeFile);
 
@@ -136,6 +131,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         screen.setSize(400,500);
         screen.setLayout(new BorderLayout());
         screen.add(project, BorderLayout.CENTER);
+        screen.add(tree, BorderLayout.WEST);
         openFiles.addTab("untitled",file);
         screen.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
@@ -159,6 +155,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     text.setText("");
                     File open = new File(currDirectory+"//main.java");
                     currFile = open;
+                    String a = currDirectory.getName();
                     if(open.exists()) {
                         Document doc = text.getDocument();
                         FileReader fr = new FileReader(open.getPath());
@@ -168,14 +165,16 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                         }
                         scan.close();
                         fr.close();
-                        String a = currDirectory.getName();
                         openFiles.setTitleAt(count-1,currFile.getName());
-                        JOptionPane.showMessageDialog(screen, "Project " + a + " opened!");
                     }
                     else {
                         openFiles.setTitleAt(count-1,"new file");
                         text.setText("<Create File>");
                     }
+                    t = new FileSystemTree(new File(currDirectory.getAbsolutePath()));
+                    tree.add(t);
+                    tree.setVisible(true);
+                    JOptionPane.showMessageDialog(screen, "Project " + a + " opened!");
                 } catch (Exception evt) {
                     JOptionPane.showMessageDialog(screen, evt.getMessage());
                 }
@@ -216,18 +215,15 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                                 "\t// write your code here\n" +
                                 "    }\n" +
                                 "}");
-                        
-                        project.add(new FileSystemTree(new File(fs.getSelectedFile().getPath()+ "//"+proName)));
-
+                        t = new FileSystemTree(new File(currDirectory.getAbsolutePath()));
+                        tree.add(t);
                         JOptionPane.showMessageDialog(screen, "Project '"+proName+"' created!");
                     } catch (IOException ex) {
                         Logger.getLogger(JavalancheCodeEditor.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-
             }
-            
-            project.setVisible(true);
+            tree.setVisible(true);
         }
 
         else if (s.equals("Close Project")) {
@@ -243,6 +239,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     currDirectory = null;
                     currFile = null;
                     text.setText("");
+                    tree.remove(t);
+                    tree.setVisible(false);
                     JOptionPane.showMessageDialog(screen, "Project " + a + " closed!");
                 }
             }
