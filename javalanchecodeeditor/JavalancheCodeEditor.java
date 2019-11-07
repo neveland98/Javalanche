@@ -1,4 +1,5 @@
 package javalanchecodeeditor;
+
 import java.awt.BorderLayout;
 import javax.swing.*;
 import java.awt.*;
@@ -8,20 +9,23 @@ import java.awt.event.*;
 import java.io.*;
 import java.nio.file.Paths;
 import javax.swing.text.*;
-
 import jsyntaxpane.*;
-
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.filechooser.FileSystemView;
-
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.swing.JLabel;
 import java.awt.Dimension;
+import java.util.Collections;
+import java.util.Vector;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeSelectionModel;
 
 
 
@@ -30,10 +34,10 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
     JFrame screen;
     File currDirectory;
     File currFile;
-    JPanel project;
+    JPanel tree;
     JTabbedPane openFiles;
     JScrollPane scrollPane;
-    int count =1;
+    FileSystemTree t;
     KeywordCounter k;
 
     JavalancheCodeEditor()
@@ -43,13 +47,24 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         JMenu proMenu, fiMenu;
         JMenuItem openProject, createProject, saveProject, closeProject;
         JMenuItem openFile, createFile, closeFile, saveFile, removeFile;
-        JPanel file;
+        JPanel file, project;
+
+        /* JFileChooser javabin = new JFileChooser();
+        javabin.setDialogTitle("Select Java Bin File");
+        javabin.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+
+        if(javabin.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
+        {
+            Path = javabin.getSelectedFile().getAbsolutePath();
+        }*/
 
         screen = new JFrame("Javalanche Editor");
         openFiles = new JTabbedPane();
         toolbar = new JMenuBar();
         file = new JPanel(new GridLayout(1,1));
         project = new JPanel(new GridLayout(1,1));
+        tree = new JPanel(new GridLayout(1,1));
+        tree.setVisible(false);
 
         //JFileChooser projectView = new JFileChooser(FileSystemView.getFileSystemView());
         //projectView.setDialogTitle("Project");
@@ -116,14 +131,14 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         screen.setSize(400,500);
         screen.setLayout(new BorderLayout());
         screen.add(project, BorderLayout.CENTER);
+        screen.add(tree, BorderLayout.WEST);
         openFiles.addTab("untitled",file);
         screen.setExtendedState(JFrame.MAXIMIZED_BOTH);
 
         screen.setVisible(true);
         screen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
-    public void actionPerformed (ActionEvent e)
-    {
+    public void actionPerformed (ActionEvent e) {
         String s = e.getActionCommand();
 
         if (s.equals("Open Project")) {
@@ -137,31 +152,34 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 try {
                     currDirectory = new File(fc.getSelectedFile().getAbsolutePath());
                     text.setText("");
-                    File open = new File(currDirectory+"//main.java");
-                    currFile = open;
-                    if(open.exists()) {
+                    File open = new File(currDirectory + "//Main.java");
+                    String a = currDirectory.getName();
+
+                    if (open.exists()) {
+                        currFile = open;
                         Document doc = text.getDocument();
                         FileReader fr = new FileReader(open.getPath());
                         Scanner scan = new Scanner(fr);
                         while (scan.hasNext()) {
-                        	doc.insertString(doc.getLength(), scan.nextLine() + '\n', null);
+                            doc.insertString(doc.getLength(), scan.nextLine() + '\n', null);
                         }
                         scan.close();
                         fr.close();
-                        String a = currDirectory.getName();
-                        openFiles.setTitleAt(count-1,currFile.getName());
-                        JOptionPane.showMessageDialog(screen, "Project " + a + " opened!");
+                        openFiles.setTitleAt(0, currFile.getName());
+                    } else {
+                        currFile = null;
+                        openFiles.setTitleAt(0, "untitled");
+                        text.setText("<Create Main File>");
                     }
-                    else {
-                        openFiles.setTitleAt(count-1,"new file");
-                        text.setText("<Create File>");
-                    }
+                    t = new FileSystemTree(new File(currDirectory.getAbsolutePath()));
+                    tree.add(t);
+                    tree.setVisible(true);
+                    JOptionPane.showMessageDialog(screen, "Project " + a + " opened!");
                 } catch (Exception evt) {
                     JOptionPane.showMessageDialog(screen, evt.getMessage());
                 }
             }
-        }
-        else if (s.equals("Create Project")) {
+        } else if (s.equals("Create Project")) {
             JFileChooser fs = new JFileChooser(FileSystemView.getFileSystemView());
             JButton create = new JButton(), enter = new JButton();
             fs.setDialogTitle("Choose Project Folder");
@@ -170,13 +188,11 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
             String proName = JOptionPane.showInputDialog(screen, "Enter Project Name: ");
 
 
-            if(fs.showSaveDialog(create) ==JFileChooser.APPROVE_OPTION)
-            {
-                if(new File(fs.getSelectedFile().getAbsolutePath() + "//"+proName+"//lib").mkdirs())
-                {
-                    currDirectory = new File(fs.getSelectedFile().getAbsolutePath() + "//"+proName);
+            if (fs.showSaveDialog(create) == JFileChooser.APPROVE_OPTION) {
+                if (new File(fs.getSelectedFile().getAbsolutePath() + "//" + proName + "//lib").mkdirs()) {
+                    currDirectory = new File(fs.getSelectedFile().getAbsolutePath() + "//" + proName);
 
-                    File a = new File(fs.getSelectedFile().getAbsolutePath()+ "//"+proName+"//main.java");
+                    File a = new File(fs.getSelectedFile().getAbsolutePath() + "//" + proName + "//Main.java");
                     currFile = a;
 
                     try {
@@ -188,34 +204,40 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                                 "    }\n" +
                                 "}");
                         w.close();
-
-                        JOptionPane.showMessageDialog(screen, "Project '"+proName+"' created!");
+                        text.setText("<Open a file>");
+                        t = new FileSystemTree(new File(currDirectory.getAbsolutePath()));
+                        tree.add(t);
+                        JOptionPane.showMessageDialog(screen, "Project '" + proName + "' created!");
                     } catch (IOException ex) {
                         Logger.getLogger(JavalancheCodeEditor.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-
             }
-        }
-
-        else if (s.equals("Close Project")) {
+            tree.setVisible(true);
+        } else if (s.equals("Close Project")) {
             if (currDirectory == null) {
                 JOptionPane.showMessageDialog(screen, "No project currently opened.");
-            }
-            else {
+            } else {
                 String a = currDirectory.getName();
                 int r = JOptionPane.showConfirmDialog(null, "Are you sure you want to close project?", "Confirm",
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                 if (r == JOptionPane.YES_OPTION) {
-                    openFiles.setTitleAt(count-1,"untitled");
+                    openFiles.setTitleAt(0, "untitled");
                     currDirectory = null;
                     currFile = null;
                     text.setText("");
+                    tree.remove(t);
+                    tree.setVisible(false);
                     JOptionPane.showMessageDialog(screen, "Project " + a + " closed!");
                 }
             }
-        }
-        else if (s.equals("Save Project")) {    // needs fixing
+        } else if (s.equals("Save Project")) {    // needs fixing
+            if (currDirectory == null) {
+                JOptionPane.showMessageDialog(screen, "No project currently opened.");
+            } else {
+                saveFile(currFile);
+            }
+            /*
             String txt = text.getText();
             JFileChooser n = new JFileChooser(".");
             n.setDialogTitle("Save");
@@ -236,8 +258,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     ex.printStackTrace();
                 }
             }
-        }
-        else if (s.equals("Open File")) {
+            */
+        } else if (s.equals("Open File")) {
             int k = 0;
             if (currFile != null) {
                 int r = JOptionPane.showConfirmDialog(null, "Are you sure you want to open a different file?", "Confirm",
@@ -246,7 +268,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     k = 1;
                 }
             }
-            if (currFile == null || k==1) {
+            if (currFile == null || k == 1) {
                 JFileChooser f = new JFileChooser();
                 if (currDirectory != null) {
                     f.setCurrentDirectory(currDirectory);
@@ -255,7 +277,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 if (r == JFileChooser.APPROVE_OPTION) {
                     File fi = new File(f.getSelectedFile().getAbsolutePath());
                     currFile = fi;
-                    openFiles.setTitleAt(count-1,fi.getName());
+                    openFiles.setTitleAt(0, fi.getName());
                     text.setText("");
                     try {
                         Document doc = text.getDocument();
@@ -264,7 +286,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                         Scanner scan = new Scanner(fr);
                         while (scan.hasNext()) {
                             doc.insertString(doc.getLength(), scan.nextLine() + '\n', null);
-
                         }
                         scan.close();
                     } catch (Exception evt) {
@@ -272,13 +293,11 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     }
                 }
             }
-        }
-        else if (s.equals("Create File")) {
+        } else if (s.equals("Create File")) {
             if (currFile == null) {
                 saveFile(currFile);
                 text.setText("<New File>");
-            }
-            else {
+            } else {
                 int r = JOptionPane.showConfirmDialog(null, "Are you sure you want to close current file?", "Confirm",
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                 if (r == JOptionPane.YES_OPTION) {
@@ -287,12 +306,10 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     text.setText("<New File>");
                 }
             }
-        }
-        else if (s.equals("Close File")) {
+        } else if (s.equals("Close File")) {
             if (currFile == null) {
                 JOptionPane.showMessageDialog(screen, "No file currently opened.");
-            }
-            else {
+            } else {
                 String a = currFile.getName();
                 int r = JOptionPane.showConfirmDialog(null, "Do you want to save?", "Confirm",
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
@@ -300,12 +317,11 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     saveFile(currFile);
                 }
                 currFile = null;
-                openFiles.setTitleAt(count-1,"untitled");
+                openFiles.setTitleAt(0, "untitled");
                 text.setText("");
                 JOptionPane.showMessageDialog(screen, "File " + a + " closed!");
             }
-        }
-        else if (s.equals("Save File")) {
+        } else if (s.equals("Save File")) {
             saveFile(currFile);
             /*
             try {
@@ -315,12 +331,10 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(screen, evt.getMessage());
             }
             */
-        }
-        else if (s.equals("Remove File")) {
+        } else if (s.equals("Remove File")) {
             if (currFile == null) {
                 JOptionPane.showMessageDialog(screen, "No file currently opened.");
-            }
-            else {
+            } else {
                 String a = currFile.getName();
                 int r = JOptionPane.showConfirmDialog(null, "Are you sure you want to remove file?", "Confirm",
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
@@ -328,7 +342,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     File f = currFile;
                     if (f.delete()) {
                         currFile = null;
-                        openFiles.setTitleAt(count-1,"untitled");
+                        openFiles.setTitleAt(0, "untitled");
                         text.setText("");
                         JOptionPane.showMessageDialog(screen, "File " + a + " removed from project!");
                     } else {
@@ -336,55 +350,25 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     }
                 }
             }
-        }
-        else if (s.equals("Execute")){    // needs fixing      
+        } else if (s.equals("Execute")) {
             if (currFile == null) {
                 JOptionPane.showMessageDialog(screen, "No file currently opened.");
-            }
-            else {
-                String f = currFile.getName();
+            } else {
                 try {
-                    Process process = Runtime.getRuntime().exec("java " + f);
-                }catch (Exception ex) {
+                    Runtime.getRuntime().exec("cmd /c start cmd.exe /k \"cd "
+                            + currDirectory.getAbsolutePath() + " && java Main\"");
+                } catch (Exception ex) {
                     ex.printStackTrace();
                 }
             }
-/*        	Scanner s1;
-        	try {
-        	s1 = new Scanner(currFile);
-        	ArrayList<String> list = new ArrayList<String>();
-        	        while (s1.hasNext()){
-        	           list.add(s1.next());
-        	        }
-        	        ArrayList<String> command = new ArrayList<String>();
-        	        command = list;
-        	        ProcessBuilder pb = new ProcessBuilder(command);
-        	        Process a = pb.start();
-        	        OutputStream os = a.getOutputStream();
-        	        PrintStream ps = new PrintStream(os);
-        	        ps.println("success");
-        	        ps.flush();
-        	        BufferedReader br = new BufferedReader(new InputStreamReader(a.getInputStream()));
-        	       String cOutput;
-        	       while((cOutput = br.readLine()) != null) {
-        	    	   System.out.println(cOutput);
-        	       }
-        	        s1.close();
-        	} catch (FileNotFoundException e1) {
-        	e1.printStackTrace();
-        	} catch (IOException e1) {
-        	e1.printStackTrace();
-        	} */
-        }
-        else if (s.equals("Compile")) {   // needs fixing   
+        } else if (s.equals("Compile")) {
             if (currFile == null) {
                 JOptionPane.showMessageDialog(screen, "No file currently opened.");
-            }
-            else {
+            } else {
                 saveFile(currFile);
-                String f = currFile.getName();
                 try {
-                    Process process = Runtime.getRuntime().exec("javac " + f);
+                    Runtime.getRuntime().exec("cmd /c start cmd.exe /k \"cd "
+                            + currDirectory.getAbsolutePath() + " && javac *.java\"");
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -410,7 +394,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     w.flush();
                     w.close();
 
-                    openFiles.setTitleAt(count-1,fi.getName());
+                    openFiles.setTitleAt(0,fi.getName());
                     JOptionPane.showMessageDialog(screen, "File created!");
                 }
                 catch (Exception evt) {
@@ -428,11 +412,93 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
 
                 w.flush();
                 w.close();
-                openFiles.setTitleAt(count-1,f.getName());
+                openFiles.setTitleAt(0,f.getName());
                 JOptionPane.showMessageDialog(screen, "File Saved!");
             } catch (Exception evt) {
                 JOptionPane.showMessageDialog(screen, evt.getMessage());
             }
+        }
+    }
+    class FileSystemTree extends JPanel{
+        public FileSystemTree(File dir)
+        {
+            setLayout(new BorderLayout());
+
+            JTree fTree = new JTree(addNodes(null, dir));
+
+            fTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+
+            fTree.addTreeSelectionListener(new TreeSelectionListener(){
+
+                @Override
+                public void valueChanged(TreeSelectionEvent tse) {
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) fTree.getLastSelectedPathComponent();
+
+                    if(node == null) {
+                        return;
+                    }
+
+                    System.out.println("You Chose Node : " + node);
+                }
+            });
+
+            JScrollPane scrollp = new JScrollPane();
+            scrollp.getViewport().add(fTree);
+            add(BorderLayout.CENTER, scrollp);
+
+
+        }
+        /*DefaultMutableTreeNode addNode(DefaultMutableTreeNode top, File dir)
+        {
+
+        }*/
+
+        DefaultMutableTreeNode addNodes(DefaultMutableTreeNode top, File dir) {
+            String thePath = dir.getPath();
+
+            DefaultMutableTreeNode curDir = new DefaultMutableTreeNode(thePath);
+
+            if(top != null) {
+                top.add(curDir);
+            }
+
+            File temp;
+            Vector files = new Vector();
+            Vector fullList = new Vector();
+            String[] allFiles = dir.list(null);
+
+            for(int i =0; i < allFiles.length; i++) {
+                fullList.add(allFiles[i]);
+            }
+
+            Collections.sort(fullList, String.CASE_INSENSITIVE_ORDER);
+
+            for(int i = 0; i < fullList.size(); i++) {
+                String curObj = (String) fullList.elementAt(i);
+                String newPath;
+
+                if(thePath.equals(".")) {
+                    newPath = curObj;
+                }
+                else {
+                    newPath = thePath + File.separator+ curObj;
+
+                }
+
+                if((temp = new File(newPath)).isDirectory()) {
+                    addNodes(curDir, temp);
+                }
+                else {
+                    files.addElement(curObj);
+                }
+
+            }
+
+            for(int fnum = 0; fnum < files.size(); fnum++) {
+                curDir.add(new DefaultMutableTreeNode(files.elementAt(fnum)));
+            }
+
+            return curDir;
         }
     }
     public static void main(String args[])
