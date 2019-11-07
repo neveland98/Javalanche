@@ -179,7 +179,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(screen, evt.getMessage());
                 }
             }
-        } else if (s.equals("Create Project")) {
+        }
+        else if (s.equals("Create Project")) {
             JFileChooser fs = new JFileChooser(FileSystemView.getFileSystemView());
             JButton create = new JButton(), enter = new JButton();
             fs.setDialogTitle("Choose Project Folder");
@@ -214,7 +215,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 }
             }
             tree.setVisible(true);
-        } else if (s.equals("Close Project")) {
+        }
+        else if (s.equals("Close Project")) {
             if (currDirectory == null) {
                 JOptionPane.showMessageDialog(screen, "No project currently opened.");
             } else {
@@ -231,7 +233,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     JOptionPane.showMessageDialog(screen, "Project " + a + " closed!");
                 }
             }
-        } else if (s.equals("Save Project")) {    // needs fixing
+        }
+        else if (s.equals("Save Project")) {    // needs fixing
             if (currDirectory == null) {
                 JOptionPane.showMessageDialog(screen, "No project currently opened.");
             } else {
@@ -259,7 +262,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 }
             }
             */
-        } else if (s.equals("Open File")) {
+        }
+        else if (s.equals("Open File")) {
             int k = 0;
             if (currFile != null) {
                 int r = JOptionPane.showConfirmDialog(null, "Are you sure you want to open a different file?", "Confirm",
@@ -293,7 +297,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     }
                 }
             }
-        } else if (s.equals("Create File")) {
+        }
+        else if (s.equals("Create File")) {
             if (currFile == null) {
                 saveFile(currFile);
                 text.setText("<New File>");
@@ -306,7 +311,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     text.setText("<New File>");
                 }
             }
-        } else if (s.equals("Close File")) {
+        }
+        else if (s.equals("Close File")) {
             if (currFile == null) {
                 JOptionPane.showMessageDialog(screen, "No file currently opened.");
             } else {
@@ -321,7 +327,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 text.setText("");
                 JOptionPane.showMessageDialog(screen, "File " + a + " closed!");
             }
-        } else if (s.equals("Save File")) {
+        }
+        else if (s.equals("Save File")) {
             saveFile(currFile);
             /*
             try {
@@ -331,7 +338,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(screen, evt.getMessage());
             }
             */
-        } else if (s.equals("Remove File")) {
+        }
+        else if (s.equals("Remove File")) {
             if (currFile == null) {
                 JOptionPane.showMessageDialog(screen, "No file currently opened.");
             } else {
@@ -350,7 +358,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     }
                 }
             }
-        } else if (s.equals("Execute")) {
+        }
+        else if (s.equals("Execute")) {
             if (currFile == null) {
                 JOptionPane.showMessageDialog(screen, "No file currently opened.");
             } else {
@@ -501,8 +510,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
             return curDir;
         }
     }
-    public static void main(String args[])
-    {
+    public static void main(String args[]) {
         JavalancheCodeEditor e = new JavalancheCodeEditor();
     }
 }
