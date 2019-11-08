@@ -1,53 +1,50 @@
-package javalanchecodeeditor;
+import jsyntaxpane.DefaultSyntaxKit;
 
 import java.awt.BorderLayout;
-import javax.swing.*;
-import java.awt.*;
-import javax.swing.filechooser.FileFilter;
-import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.event.*;
-import java.io.*;
-import java.nio.file.Paths;
-import javax.swing.text.*;
-import jsyntaxpane.*;
-import java.util.ArrayList;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.filechooser.FileSystemView;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.swing.JLabel;
-import java.awt.Dimension;
 import java.util.Collections;
 import java.util.Vector;
+
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.filechooser.FileSystemView;
+import javax.swing.text.Document;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
-
+import javax.swing.*;
 
 
 public class JavalancheCodeEditor extends JFrame implements ActionListener {
-    JEditorPane text;
-    JFrame screen;
-    File currDirectory;
-    File currFile;
-    JPanel tree;
-    JTabbedPane openFiles;
-    JScrollPane scrollPane;
-    FileSystemTree t;
-    KeywordCounter k;
+    private JEditorPane text;
+    private JFrame screen;
+    private File currDirectory;
+    private File currFile;
+    private JPanel tree;
+    private JLabel keyw;
+    private JTabbedPane openFiles;
+    private FileSystemTree t;
 
     JavalancheCodeEditor()
     {
-        JButton newProject, execute, compile;
+        JButton execute, compile, kcount;
         JMenuBar toolbar;
         JMenu proMenu, fiMenu;
         JMenuItem openProject, createProject, saveProject, closeProject;
         JMenuItem openFile, createFile, closeFile, saveFile, removeFile;
-        JPanel file, project;
+        JPanel file, project, bottom;
 
         /* JFileChooser javabin = new JFileChooser();
         javabin.setDialogTitle("Select Java Bin File");
@@ -63,6 +60,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         toolbar = new JMenuBar();
         file = new JPanel(new GridLayout(1,1));
         project = new JPanel(new GridLayout(1,1));
+        bottom = new JPanel();
+        keyw = new JLabel("Number of keywords: ");
         tree = new JPanel(new GridLayout(1,1));
         tree.setVisible(false);
 
@@ -72,7 +71,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         //project.add(projectView);
 
         text = new JEditorPane();
-        KeywordCounter k = new KeywordCounter();
         DefaultSyntaxKit.initKit();
         text.setContentType("text/java");
 
@@ -114,9 +112,11 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
 
         compile = new JButton("Compile");
         execute = new JButton("Execute");
+        kcount = new JButton("Update");
 
         compile.addActionListener(this);
         execute.addActionListener(this);
+        kcount.addActionListener(this);
 
         toolbar.add(proMenu);
         toolbar.add(fiMenu);
@@ -124,17 +124,22 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         toolbar.add(execute);
 
         text.setFont(new Font("Courier New", Font.PLAIN, 14));
-        scrollPane = new JScrollPane(text);
+        JScrollPane scrollPane = new JScrollPane(text);
         file.add(scrollPane, BorderLayout.CENTER);
         project.add(openFiles);
+        openFiles.addTab("untitled",file);
+
+        bottom.add(kcount);
+        bottom.add(keyw);
+
         screen.setJMenuBar(toolbar);
-        screen.setSize(400,500);
         screen.setLayout(new BorderLayout());
         screen.add(project, BorderLayout.CENTER);
         screen.add(tree, BorderLayout.WEST);
-        openFiles.addTab("untitled",file);
-        screen.setExtendedState(JFrame.MAXIMIZED_BOTH);
+        screen.add(bottom, BorderLayout.PAGE_END);
 
+        screen.setSize(1000,800);
+        screen.setExtendedState(JFrame.MAXIMIZED_BOTH);
         screen.setVisible(true);
         screen.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
@@ -182,7 +187,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         }
         else if (s.equals("Create Project")) {
             JFileChooser fs = new JFileChooser(FileSystemView.getFileSystemView());
-            JButton create = new JButton(), enter = new JButton();
+            JButton create = new JButton(); //enter = new JButton();
             fs.setDialogTitle("Choose Project Folder");
             fs.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
@@ -324,20 +329,14 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 }
                 currFile = null;
                 openFiles.setTitleAt(0, "untitled");
+                keyw.setText("Number of keywords: ");
                 text.setText("");
                 JOptionPane.showMessageDialog(screen, "File " + a + " closed!");
             }
         }
         else if (s.equals("Save File")) {
             saveFile(currFile);
-            /*
-            try {
-            	System.out.println(k.countKeywords(currFile));
-            }
-            catch (Exception evt) {
-                JOptionPane.showMessageDialog(screen, evt.getMessage());
-            }
-            */
+
         }
         else if (s.equals("Remove File")) {
             if (currFile == null) {
@@ -370,7 +369,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     ex.printStackTrace();
                 }
             }
-        } else if (s.equals("Compile")) {
+        }
+        else if (s.equals("Compile")) {
             if (currFile == null) {
                 JOptionPane.showMessageDialog(screen, "No file currently opened.");
             } else {
@@ -383,8 +383,21 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 }
             }
         }
+        else if (s.equals("Update")) {
+            if (currFile == null) {
+                JOptionPane.showMessageDialog(screen, "No file currently opened.");
+            }
+            else {
+                saveFile(currFile);
+                try {
+                    keyw.setText("Number of keywords: " + KeywordCounter.countKeywords(currFile));
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
     }
-    public void saveFile(File f) {
+    private void saveFile(File f) {
         if (f == null) {
             JFileChooser fc = new JFileChooser();
             if (currDirectory != null) {
@@ -428,12 +441,12 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
             }
         }
     }
-    class FileSystemTree extends JPanel{
-        public FileSystemTree(File dir)
+    static class FileSystemTree extends JPanel{
+        FileSystemTree(File dir)
         {
             setLayout(new BorderLayout());
 
-            JTree fTree = new JTree(addNodes(null, dir));
+            final JTree fTree = new JTree(addNodes(null, dir));
 
             fTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 
@@ -476,9 +489,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
             Vector fullList = new Vector();
             String[] allFiles = dir.list(null);
 
-            for(int i =0; i < allFiles.length; i++) {
-                fullList.add(allFiles[i]);
-            }
+            assert allFiles != null;
+            Collections.addAll(fullList, allFiles);
 
             Collections.sort(fullList, String.CASE_INSENSITIVE_ORDER);
 
@@ -509,8 +521,5 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
 
             return curDir;
         }
-    }
-    public static void main(String args[]) {
-        JavalancheCodeEditor e = new JavalancheCodeEditor();
     }
 }
