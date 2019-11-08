@@ -40,7 +40,6 @@ class KeywordCounter {
             if(line.contains("*/")) {
                 commented = false;
             }
-
         }
         return numkeys;
     }
