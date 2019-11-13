@@ -248,6 +248,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
             }
             else {
                 saveFile(currFile);
+                JOptionPane.showMessageDialog(screen, "Project " + currDirectory.getName() + " saved!");
             }
             /*
             String txt = text.getText();
