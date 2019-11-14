@@ -392,10 +392,9 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 File main = new File(currFile.getParentFile().getAbsolutePath() + "//Main.java");
                 if (main.exists()) {
                     try {
-                        Runtime.getRuntime().exec("cmd /c \"cd "
+                        Runtime.getRuntime().exec("cmd /c start cmd.exe /k \"cd "
                                 + currFile.getParentFile().getAbsolutePath() + " && javac Main.java\"");
                         flag = 1;
-                        JOptionPane.showMessageDialog(screen, "Main compiled.");
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
