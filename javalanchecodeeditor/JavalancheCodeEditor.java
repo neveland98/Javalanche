@@ -1,3 +1,4 @@
+package javalanchecodeeditor;
 import jsyntaxpane.DefaultSyntaxKit;
 
 import java.awt.BorderLayout;
