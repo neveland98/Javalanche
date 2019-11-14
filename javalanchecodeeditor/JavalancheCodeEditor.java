@@ -47,14 +47,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         JMenuItem openFile, createFile, closeFile, saveFile, removeFile;
         JPanel file, project, bottom;
 
-        /* JFileChooser javabin = new JFileChooser();
-        javabin.setDialogTitle("Select Java Bin File");
-        javabin.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-
-        if(javabin.showOpenDialog(this) == JFileChooser.APPROVE_OPTION)
-        {
-            Path = javabin.getSelectedFile().getAbsolutePath();
-        }*/
+        
 
         screen = new JFrame("Javalanche Editor");
         openFiles = new JTabbedPane();
@@ -66,11 +59,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         tree = new JPanel(new GridLayout(1,1));
         tree.setVisible(false);
 
-        //JFileChooser projectView = new JFileChooser(FileSystemView.getFileSystemView());
-        //projectView.setDialogTitle("Project");
-        //projectView.setControlButtonsAreShown(false);
-        //project.add(projectView);
-
+        
         text = new JEditorPane();
         DefaultSyntaxKit.initKit();
         text.setContentType("text/java");
@@ -321,7 +310,12 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     saveFile(currFile);
                     text.setText("<New File>");
                 }
+           
             }
+            
+            tree.remove(t);
+            t = new FileSystemTree(new File(currDirectory.getAbsolutePath()));
+            tree.add(t);
         }
         else if (s.equals("Close File")) {
             if (currFile == null) {
@@ -364,6 +358,10 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                         JOptionPane.showMessageDialog(screen, "Error");
                     }
                 }
+                
+                tree.remove(t);
+                t = new FileSystemTree(new File(currDirectory.getAbsolutePath()));
+                tree.add(t);
             }
         }
         else if (s.equals("Execute")) {
@@ -480,8 +478,10 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     if(node == null) {
                         return;
                     }
+                    
+                    
 
-                    System.out.println("You Chose Node : " + node);
+                    
                 }
             });
 
