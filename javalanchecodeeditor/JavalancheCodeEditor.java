@@ -45,9 +45,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         JMenuItem openProject, createProject, saveProject, closeProject;
         JMenuItem openFile, createFile, closeFile, saveFile, removeFile;
         JPanel file, project, bottom;
-
         
-
         screen = new JFrame("Javalanche Editor");
         openFiles = new JTabbedPane();
         toolbar = new JMenuBar();
@@ -57,7 +55,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         keyw = new JLabel("Number of keywords: ");
         tree = new JPanel(new GridLayout(1,1));
         tree.setVisible(false);
-
         
         text = new JEditorPane();
         DefaultSyntaxKit.initKit();
@@ -75,7 +72,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
         closeFile = new JMenuItem("Close File");
         saveFile = new JMenuItem("Save File");
         removeFile = new JMenuItem("Remove File");
-
 
         openProject.addActionListener(this);
         createProject.addActionListener(this);
@@ -267,6 +263,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 int r = JOptionPane.showConfirmDialog(null, "Are you sure you want to open a different file?", "Confirm",
                         JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
                 if (r == JOptionPane.YES_OPTION) {
+                    saveFile(currFile);
                     k = 1;
                 }
             }
@@ -308,8 +305,7 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     currFile = null;
                     saveFile(currFile);
                     text.setText("<New File>");
-                }
-           
+                }        
             }
             
             tree.remove(t);
@@ -476,19 +472,13 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
 
                     if(node == null) {
                         return;
-                    }
-                    
-                    
-
-                    
+                    }               
                 }
             });
 
             JScrollPane scrollp = new JScrollPane();
             scrollp.getViewport().add(fTree);
             add(BorderLayout.CENTER, scrollp);
-
-
         }
         /*DefaultMutableTreeNode addNode(DefaultMutableTreeNode top, File dir)
         {
