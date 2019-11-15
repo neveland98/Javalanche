@@ -36,7 +36,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
     private JLabel keyw;
     private JTabbedPane openFiles;
     private FileSystemTree t;
-    private int flag;
 
     JavalancheCodeEditor()
     {
@@ -369,7 +368,8 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                 JOptionPane.showMessageDialog(screen, "No file currently opened.");
             }
             else {
-                if (flag==1) {
+                File main = new File(currFile.getParentFile().getAbsolutePath() + "//Main.class");
+                if (main.exists()) {
                     try {
                         Runtime.getRuntime().exec("cmd /c start cmd.exe /k \"cd "
                                 + currFile.getParentFile().getAbsolutePath() + " && java Main\"");
@@ -394,7 +394,6 @@ public class JavalancheCodeEditor extends JFrame implements ActionListener {
                     try {
                         Runtime.getRuntime().exec("cmd /c start cmd.exe /k \"cd "
                                 + currFile.getParentFile().getAbsolutePath() + " && javac Main.java\"");
-                        flag = 1;
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
