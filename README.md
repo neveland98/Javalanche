@@ -1,4 +1,4 @@
-# Javalanche
+# Javalanche - COSC 4353 Project
 Members: Paola Garibay, Dwija Parikh, Ganiyat Alabi, Nathaniel Eveland, Jose Boccalandro
 
 A simple Java code editor
@@ -13,3 +13,4 @@ Core functionality of the system:
 6. Use blue to color for “if”, “else”, “for”, “while” keywords.
 7. Use red to color arithmetic and Boolean operators, e.g., “+”, “-“, “/”, “||”.
 8. Use green for strings.
+
