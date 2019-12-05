@@ -1,4 +1,5 @@
 # Javalanche
+Members: Paola Garibay, Dwija Parikh,
 A simple Java code editor
 
 Core functionality of the system:
