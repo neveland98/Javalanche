@@ -1,7 +1,7 @@
 # Javalanche
 Members: Paola Garibay, Dwija Parikh,
-A simple Java code editor
 
+A simple Java code editor
 Core functionality of the system:
 1. Open/create/close/save project
 2. Open/create/close/edit/save/remove file
